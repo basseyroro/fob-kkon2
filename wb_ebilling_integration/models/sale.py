@@ -31,11 +31,12 @@ class Sales(models.Model):
         wb_url = self.env['ir.config_parameter'].sudo().get_param(
             'wb_ebilling_integration.wb_ebilling_url') or ''
         if wb_token and wb_url:
+            names = self.name.split(" ")
             payload = {
                 "erpid": "{}".format(self.partner_id.id),
                 "order_erpid": "{}".format(self.id),
-                "firstname": "",
-                "lastname": "{}".format(self.partner_id.name),
+                "firstname": names[0],
+                "lastname": "{}".format(names[1:] or ''),
                 "username": "{}".format(self.x_studio_customer_id),
                 "company": "{}".format(self.company_id.name),
                 "address": "{} {}".format(self.partner_id.street, self.partner_id.street2),
