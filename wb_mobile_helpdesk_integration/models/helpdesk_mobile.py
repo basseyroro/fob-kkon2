@@ -29,7 +29,9 @@ class WBMobileRequestRegistration(models.Model):
         return [{'name': prd.name, 'id': prd.id, 'company_id': prd.company_id.id} for prd in self.env['helpdesk.team'].sudo().search([])]
 
     def getHelpdeskList(self):
-        return [{'name': prd.name,
+        helpdesk_list = []
+        for prd in self.env['helpdesk.ticket'].search([]):
+            helpdesk_list.append({'name': prd.name,
                  'id': prd.id,
                  'helpdesk_number':prd.x_studio_helpdesk_id or '',
                  'helpdesk_team_id': prd.team_id.id,
@@ -51,12 +53,11 @@ class WBMobileRequestRegistration(models.Model):
                  'company_name': prd.company_id.name,
                  'stage_list':[{'stage_name': sts.name,
                                  'stage_id': sts.id,
-                                 'is_last_status': sts.is_close}
-                                for sts in self.env['helpdesk.stage'].search(['team_ids', 'in', [prd.team_id.id]], order='sequence')],
+                                 'is_last_status': sts.is_close} for sts in self.env['helpdesk.stage'].search(['team_ids', 'in', [prd.team_id.id]], order='sequence')],
                  'stage_id': prd.state_id.id,
                  'stage_name': prd.state_id.name,
-                 }
-                for prd in self.env['helpdesk.ticket'].search([])]
+                 })
+        return helpdesk_list
 
     def getProductList(self):
         return [{'id':prd.id, 'name':prd.name} for prd in
