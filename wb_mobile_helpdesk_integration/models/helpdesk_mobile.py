@@ -20,13 +20,13 @@ class WBMobileRequestRegistration(models.Model):
     process_message = fields.Char("Proceed Message")
 
     def getCustomerList(self):
-        return [{'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id} for prd in self.env['res.partner'].sudo().search([('id','>',5)])]
+        return json.dumps([{'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id} for prd in self.env['res.partner'].sudo().search([('id','>',5)])])
 
     def getCompanyList(self):
-        return [{'name':prd.name, 'id':prd.id, } for prd in self.env['res.company'].sudo().search([])]
+        return json.dumps([{'name':prd.name, 'id':prd.id, } for prd in self.env['res.company'].sudo().search([])])
 
     def getHelpdeskTeamList(self):
-        return [{'name': prd.name, 'id': prd.id, 'company_id': prd.company_id.id} for prd in self.env['helpdesk.team'].sudo().search([])]
+        return json.dumps([{'name': prd.name, 'id': prd.id, 'company_id': prd.company_id.id} for prd in self.env['helpdesk.team'].sudo().search([])])
 
     def getHelpdeskList(self):
         helpdesk_list = []
@@ -57,12 +57,12 @@ class WBMobileRequestRegistration(models.Model):
                  'stage_id': prd.stage_id.id,
                  'stage_name': prd.stage_id.name,
                  })
-        return helpdesk_list
+        return json.dumps(helpdesk_list)
 
     def getProductList(self):
-        return [{'id':prd.id, 'name':prd.name} for prd in
-                self.env['product.product'].search([('sale_ok', '=', True)])]
+        return json.dumps([{'id':prd.id, 'name':prd.name} for prd in
+                self.env['product.product'].search([('sale_ok', '=', True)])])
 
     def getTeamList(self):
-        return [{'id': prd.id, 'name': prd.name} for prd in
-                self.env['res.users'].sudo().search([('share','=',False)])]
+        return json.dumps([{'id': prd.id, 'name': prd.name} for prd in
+                self.env['res.users'].sudo().search([('share','=',False)])])
