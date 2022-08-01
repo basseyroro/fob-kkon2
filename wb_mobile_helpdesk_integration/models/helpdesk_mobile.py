@@ -54,8 +54,8 @@ class WBMobileRequestRegistration(models.Model):
                  'stage_list':[{'stage_name': sts.name,
                                  'stage_id': sts.id,
                                  'is_last_status': sts.is_close} for sts in self.env['helpdesk.stage'].search([('team_ids', 'in', [prd.team_id.id])], order='sequence')],
-                 'stage_id': prd.state_id.id,
-                 'stage_name': prd.state_id.name,
+                 'stage_id': prd.stage_id.id,
+                 'stage_name': prd.stage_id.name,
                  })
         return helpdesk_list
 
