@@ -65,4 +65,4 @@ class WBMobileRequestRegistration(models.Model):
 
     def getTeamList(self):
         return [{'id': prd.id, 'name': prd.name} for prd in
-                self.env.ref('base.group_user').sudo().users]
+                self.env['res.users'].sudo().search([('share','=',False)])]
