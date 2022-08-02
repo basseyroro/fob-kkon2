@@ -6,6 +6,12 @@ from odoo import api, fields, models, _
 _logger = logging.getLogger(__name__)
 
 
+class HelpdeskStages(models.Model):
+    _inherit = "helpdesk.stage"
+
+    display_in_mobile_app = fields.Boolean("Is display in mobile application?", default=False, copy=False)
+
+
 class WBMobileRequestRegistration(models.Model):
     _name = "wb.mobile.request.registration"
     _description = "Mobile Helpdesk Request Registratiton List"
@@ -30,7 +36,7 @@ class WBMobileRequestRegistration(models.Model):
 
     def getHelpdeskList(self):
         helpdesk_list = []
-        for prd in self.env['helpdesk.ticket'].search([]):
+        for prd in self.env['helpdesk.ticket'].search([('stage_id.display_in_mobile_app', '=', True)]):
             helpdesk_list.append({'name': prd.name,
                  'id': prd.id,
                  'helpdesk_number':prd.x_studio_helpdesk_id or '',
