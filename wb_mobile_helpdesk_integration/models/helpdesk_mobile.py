@@ -26,10 +26,7 @@ class WBMobileRequestRegistration(models.Model):
     process_message = fields.Char("Proceed Message")
 
     def getCustomerList(self):
-        return json.dumps([{'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id} for prd in self.env['res.partner'].sudo().search([('id','>',5)])])
-
-    def getCompanyList(self):
-        return json.dumps([{'name':prd.name, 'id':prd.id,
+        return json.dumps([{'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id,
                             'first_name': prd.x_studio_first_name or '',
                             'last_name': prd.x_studio_last_name or '',
                             'country_id': prd.country_id.id or False,
@@ -43,7 +40,10 @@ class WBMobileRequestRegistration(models.Model):
                             'zip': prd.zip or '',
                             'city': prd.city or '',
                             'email': prd.email or ''
-                            } for prd in self.env['res.company'].sudo().search([])])
+                            } for prd in self.env['res.partner'].sudo().search([('id','>',5)])])
+
+    def getCompanyList(self):
+        return json.dumps([{'name':prd.name, 'id':prd.id} for prd in self.env['res.company'].sudo().search([])])
 
     def getHelpdeskTeamList(self):
         return json.dumps([{'name': prd.name, 'id': prd.id, 'company_id': prd.company_id.id} for prd in self.env['helpdesk.team'].sudo().search([])])
