@@ -26,10 +26,24 @@ class WBMobileRequestRegistration(models.Model):
     process_message = fields.Char("Proceed Message")
 
     def getCustomerList(self):
-        return json.dumps([{'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id} for prd in self.env['res.partner'].sudo().search([('id','>',5)])])
+        return json.dumps([{'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id,
+                            'first_name': prd.x_studio_first_name or '',
+                            'last_name': prd.x_studio_last_name or '',
+                            'country_id': prd.country_id.id or False,
+                            'country_name': prd.country_id.name or '',
+                            'state_id': prd.state_id.id or False,
+                            'state_name': prd.state_id.name or '',
+                            'mobile': prd.mobile or '',
+                            'phone': prd.phone or '',
+                            'street': prd.street or '',
+                            'street2': prd.street2 or '',
+                            'zip': prd.zip or '',
+                            'city': prd.city or '',
+                            'email': prd.email or ''
+                            } for prd in self.env['res.partner'].sudo().search([('id','>',5)])])
 
     def getCompanyList(self):
-        return json.dumps([{'name':prd.name, 'id':prd.id, } for prd in self.env['res.company'].sudo().search([])])
+        return json.dumps([{'name':prd.name, 'id':prd.id} for prd in self.env['res.company'].sudo().search([])])
 
     def getHelpdeskTeamList(self):
         return json.dumps([{'name': prd.name, 'id': prd.id, 'company_id': prd.company_id.id} for prd in self.env['helpdesk.team'].sudo().search([])])
@@ -42,7 +56,7 @@ class WBMobileRequestRegistration(models.Model):
                  'helpdesk_number':prd.x_studio_helpdesk_id or '',
                  'helpdesk_team_id': prd.team_id.id,
                  'helpdesk_team_name': prd.team_id.name,
-                 'sale_id': prd.x_studio_many2one_field_fD8Y4.name,
+                 'sale_id': prd.sudo().x_studio_many2one_field_fD8Y4.name,
                  'assigned_user_id': prd.user_id.id,
                  'assigned_user_name': prd.user_id.name,
                  'ticket_type_id': prd.ticket_type_id.id,
@@ -72,3 +86,33 @@ class WBMobileRequestRegistration(models.Model):
     def getTeamList(self):
         return json.dumps([{'id': prd.id, 'name': prd.name} for prd in
                 self.env['res.users'].sudo().search([('share','=',False)])])
+
+    def assignTeamMember(self, vals={}):
+        # vals = {'fse_id':1, 'ticket_id':1}
+        key_vals = ['fse_id', 'ticket_id']
+        response_data = {"status":0, "msg":"Record not updated."}
+        if not vals:
+            response_data['msg'] = "Getting blank payload."
+            return json.dumps(response_data)
+        if type(vals) != type({}):
+            response_data['msg'] = "Payload should be in dictionary format."
+            return json.dumps(response_data)
+        for rkey in key_vals:
+            if rkey not in vals or not vals.get(rkey):
+                response_data['msg'] = "{} key is not found or its a blank".format(rkey)
+                return json.dumps(response_data)
+        fse_id = self.env['res.users'].sudo().search([('id', '=', vals.get("fse_id"))])
+        if not fse_id:
+            response_data['msg'] = "FSE_ID key value is not found."
+            return json.dumps(response_data)
+        ticket_id = self.env['helpdesk.ticket'].sudo().search([('id', '=', vals.get("ticket_id"))])
+        if not ticket_id:
+            response_data['msg'] = "TICKET_ID key value is not found."
+            return json.dumps(response_data)
+        if not ticket_id.stage_id.display_in_mobile_app:
+            response_data['msg'] = "This ticket is not in correct state. Pls refresh the records."
+            return json.dumps(response_data)
+        ticket_id.write({"x_studio_fse":vals.get("fse_id")})
+        response_data['msg'] = "FSE user successfully updated in this ticket."
+        response_data['status'] = 1
+        return json.dumps(response_data)
