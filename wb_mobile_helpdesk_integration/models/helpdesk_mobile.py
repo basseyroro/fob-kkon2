@@ -29,7 +29,21 @@ class WBMobileRequestRegistration(models.Model):
         return json.dumps([{'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id} for prd in self.env['res.partner'].sudo().search([('id','>',5)])])
 
     def getCompanyList(self):
-        return json.dumps([{'name':prd.name, 'id':prd.id, } for prd in self.env['res.company'].sudo().search([])])
+        return json.dumps([{'name':prd.name, 'id':prd.id,
+                            'first_name': prd.x_studio_first_name or '',
+                            'last_name': prd.x_studio_last_name or '',
+                            'country_id': prd.country_id.id or False,
+                            'country_name': prd.country_id.name or '',
+                            'state_id': prd.state_id.id or False,
+                            'state_name': prd.state_id.name or '',
+                            'mobile': prd.mobile or '',
+                            'phone': prd.phone or '',
+                            'street': prd.street or '',
+                            'street2': prd.street2 or '',
+                            'zip': prd.zip or '',
+                            'city': prd.city or '',
+                            'email': prd.email or ''
+                            } for prd in self.env['res.company'].sudo().search([])])
 
     def getHelpdeskTeamList(self):
         return json.dumps([{'name': prd.name, 'id': prd.id, 'company_id': prd.company_id.id} for prd in self.env['helpdesk.team'].sudo().search([])])
@@ -98,7 +112,7 @@ class WBMobileRequestRegistration(models.Model):
         if not ticket_id.stage_id.display_in_mobile_app:
             response_data['msg'] = "This ticket is not in correct state. Pls refresh the records."
             return json.dumps(response_data)
-        ticket_id.write({"x_studio_many2one_field_F3tVh":vals.get("fse_id")})
+        ticket_id.write({"x_studio_fse":vals.get("fse_id")})
         response_data['msg'] = "FSE user successfully updated in this ticket."
         response_data['status'] = 1
         return json.dumps(response_data)
