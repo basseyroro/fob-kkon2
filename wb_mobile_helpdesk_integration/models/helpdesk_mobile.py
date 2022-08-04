@@ -56,7 +56,7 @@ class WBMobileRequestRegistration(models.Model):
                  'helpdesk_number':prd.x_studio_helpdesk_id or '',
                  'helpdesk_team_id': prd.team_id.id,
                  'helpdesk_team_name': prd.team_id.name,
-                 'sale_id': prd.x_studio_many2one_field_fD8Y4.name,
+                 'sale_id': prd.sudo().x_studio_many2one_field_fD8Y4.name,
                  'assigned_user_id': prd.user_id.id,
                  'assigned_user_name': prd.user_id.name,
                  'ticket_type_id': prd.ticket_type_id.id,
