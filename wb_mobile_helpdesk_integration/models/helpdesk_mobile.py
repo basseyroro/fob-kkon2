@@ -72,3 +72,33 @@ class WBMobileRequestRegistration(models.Model):
     def getTeamList(self):
         return json.dumps([{'id': prd.id, 'name': prd.name} for prd in
                 self.env['res.users'].sudo().search([('share','=',False)])])
+
+    def assignTeamMember(self, vals={}):
+        # vals = {'fse_id':1, 'ticket_id':1}
+        key_vals = ['fse_id', 'ticket_id']
+        response_data = {"status":0, "msg":"Record not updated."}
+        if not vals:
+            response_data['msg'] = "Getting blank payload."
+            return json.dumps(response_data)
+        if type(vals) != type({}):
+            response_data['msg'] = "Payload should be in dictionary format."
+            return json.dumps(response_data)
+        for rkey in key_vals:
+            if rkey not in vals or not vals.get(rkey):
+                response_data['msg'] = "{} key is not found or its a blank".format(rkey)
+                return json.dumps(response_data)
+        fse_id = self.env['res.users'].sudo().search([('id', '=', vals.get("fse_id"))])
+        if not fse_id:
+            response_data['msg'] = "FSE_ID key value is not found."
+            return json.dumps(response_data)
+        ticket_id = self.env['helpdesk.ticket'].sudo().search([('id', '=', vals.get("ticket_id"))])
+        if not ticket_id:
+            response_data['msg'] = "TICKET_ID key value is not found."
+            return json.dumps(response_data)
+        if not ticket_id.stage_id.display_in_mobile_app:
+            response_data['msg'] = "This ticket is not in correct state. Pls refresh the records."
+            return json.dumps(response_data)
+        ticket_id.write({"x_studio_many2one_field_F3tVh":vals.get("fse_id")})
+        response_data['msg'] = "FSE user successfully updated in this ticket."
+        response_data['status'] = 1
+        return json.dumps(response_data)
