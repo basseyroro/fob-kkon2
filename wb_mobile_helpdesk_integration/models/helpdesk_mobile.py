@@ -102,9 +102,16 @@ class WBMobileRequestRegistration(models.Model):
         return json.dumps([{'id':prd.id, 'name':prd.name} for prd in
                 self.env['product.product'].search([('sale_ok', '=', True)])])
 
-    def getTeamList(self):
-        return json.dumps([{'id': prd.id, 'name': prd.name} for prd in
-                self.env['res.users'].sudo().search([('share','=',False)])])
+    def getTeamList(self, page=0):
+        helpdesk_list = []
+        offset_limit = 0
+        for offset in range(page):
+            if offset > 0:
+                offset_limit += 50
+        for prd in self.env['res.users'].sudo().search([('share', '=', False)],
+                                                       offset=offset_limit, limit=50, order="id"):
+            helpdesk_list.append({'id': prd.id, 'name': prd.name})
+        return json.dumps(helpdesk_list)
 
     def assignTeamMember(self, vals={}):
         # vals = {'fse_id':1, 'ticket_id':1}
