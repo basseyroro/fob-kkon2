@@ -1,6 +1,6 @@
 import logging
 import json
-import requests
+# import requests
 from odoo import api, fields, models, _
 
 _logger = logging.getLogger(__name__)
@@ -25,8 +25,14 @@ class WBMobileRequestRegistration(models.Model):
     active = fields.Boolean("Active", default=True)
     process_message = fields.Char("Proceed Message")
 
-    def getCustomerList(self):
-        return json.dumps([{'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id,
+    def getCustomerList(self, page=0):
+        customer_list = []
+        offset_limit = 0
+        for offset in range(page):
+            if offset > 0:
+                offset_limit += 50
+        for prd in self.env['res.partner'].sudo().search([], offset=offset_limit, limit=50, order="id"):
+            customer_list.append({'name':prd.display_name, 'id':prd.id, 'customer_id': prd.x_studio_customer_id or '',
                             'first_name': prd.x_studio_first_name or '',
                             'last_name': prd.x_studio_last_name or '',
                             'country_id': prd.country_id.id or False,
@@ -40,17 +46,30 @@ class WBMobileRequestRegistration(models.Model):
                             'zip': prd.zip or '',
                             'city': prd.city or '',
                             'email': prd.email or ''
-                            } for prd in self.env['res.partner'].sudo().search([('id','>',5)])])
+                            })
+        return json.dumps(customer_list)
 
     def getCompanyList(self):
         return json.dumps([{'name':prd.name, 'id':prd.id} for prd in self.env['res.company'].sudo().search([])])
 
-    def getHelpdeskTeamList(self):
-        return json.dumps([{'name': prd.name, 'id': prd.id, 'company_id': prd.company_id.id} for prd in self.env['helpdesk.team'].sudo().search([])])
+    def getHelpdeskTeamList(self, page=0):
+        obj_list = []
+        offset_limit = 0
+        for offset in range(page):
+            if offset > 0:
+                offset_limit += 50
+        for prd in self.env['helpdesk.team'].sudo().search([],offset=offset_limit, limit=50, order="id"):
+            obj_list.append({'name': prd.name, 'id': prd.id, 'company_id': prd.company_id.id})
+        return json.dumps(obj_list)
 
-    def getHelpdeskList(self):
+    def getHelpdeskList(self, page=0):
         helpdesk_list = []
-        for prd in self.env['helpdesk.ticket'].search([('stage_id.display_in_mobile_app', '=', True)]):
+        offset_limit = 0
+        for offset in range(page):
+            if offset > 0:
+                offset_limit += 50
+        for prd in self.env['helpdesk.ticket'].search([('stage_id.display_in_mobile_app', '=', True)],
+                                                      offset=offset_limit, limit=50, order="id"):
             helpdesk_list.append({'name': prd.name,
                  'id': prd.id,
                  'helpdesk_number':prd.x_studio_helpdesk_id or '',
